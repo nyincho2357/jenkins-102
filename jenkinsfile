@@ -16,21 +16,21 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                echo "🔧 Building Docker Image..."
+                echo "🔧 Building Docker image..."
                 sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
 
         stage('Smoke Test') {
             steps {
-                echo "🧪 Testing container (basic run)"
+                echo "🧪 Running container for test..."
                 sh 'docker run --rm $IMAGE_NAME:$IMAGE_TAG python app.py'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                echo "🚀 Pushing to Docker Hub..."
+                echo "🚀 Pushing image to Docker Hub..."
                 withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                       echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
