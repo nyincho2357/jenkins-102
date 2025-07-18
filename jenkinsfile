@@ -1,44 +1,12 @@
-pipeline {
-    agent any
-
-    environment {
-        IMAGE_NAME = 'nyincho2537/jenkins-102'
-        IMAGE_TAG = "v1.0.${BUILD_NUMBER}"
-        CREDENTIALS_ID = 'dockerhub-creds-id'
+stage('Deploy') {
+  steps {
+    echo "🚀 Pushing image to Docker Hub..."
+    withCredentials([usernamePassword(credentialsId: 'b0a10bbf-2781-4476-b415-1da671f79c2f', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+      sh '''
+        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        docker push $IMAGE_NAME:$IMAGE_TAG
+        docker logout
+      '''
     }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/nyincho2357/jenkins-102.git'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo "🔧 Building Docker image..."
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
-            }
-        }
-
-        stage('Smoke Test') {
-            steps {
-                echo "🧪 Running container for test..."
-                sh 'docker run --rm $IMAGE_NAME:$IMAGE_TAG python app.py'
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                echo "🚀 Pushing image to Docker Hub..."
-                withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                      docker push $IMAGE_NAME:$IMAGE_TAG
-                      docker logout
-                    '''
-                }
-            }
-        }
-    }
+  }
 }
