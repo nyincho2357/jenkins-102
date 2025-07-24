@@ -1,0 +1,59 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+# Test stage - Basic validation
+test-job:
+  stage: test
+  image: alpine:latest
+  script:
+    - echo "🚀 Starting tests..."
+    - echo "Current date: $(date)"
+    - echo "System info: $(uname -a)"
+    - echo "Testing basic commands..."
+    - ls -la
+    - pwd
+    - echo "✅ Tests completed successfully!"
+  tags:
+    - docker
+
+# Build stage - Simple build simulation
+build-job:
+  stage: build
+  image: alpine:latest
+  script:
+    - echo "🔨 Building application..."
+    - echo "Creating build artifact..."
+    - mkdir -p build
+    - echo "Build $(date)" > build/info.txt
+    - echo "✅ Build completed!"
+  artifacts:
+    paths:
+      - build/
+  tags:
+    - docker
+  only:
+    - main
+
+# Deploy stage - Manual deployment
+deploy-staging:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "🚀 Deploying to staging environment..."
+    - echo "Checking build artifact..."
+    - cat build/info.txt
+    - echo "Environment: STAGING"
+    - echo "Version: $(date +%Y%m%d-%H%M%S)"
+    - echo "✅ Deployment completed successfully!"
+  tags:
+    - docker
+  only:
+    - main
+  when: manual
+  environment:
+    name: staging
